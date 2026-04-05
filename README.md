@@ -1,14 +1,29 @@
-# C-Unplugged Music Application 🎵
+# 🎵 C-Unplugged Music Application 🎵
 
-C-Unplugged is a vibrant, CLI-based music library and playlist manager written in C. It allows you to organize your music into albums, create and manage a natively looping 'Now Playing' playlist, and execute standard media controls seamlessly from an interactive and beautifully colored terminal interface.
+**C-Unplugged** is a vibrant, fully-featured, CLI-based music library and playlist manager written entirely in C. Step away from the heavy GUI apps and return to the golden age of terminal utilities, with modern features, colorful outputs, and highly interactive menus.
+
+---
 
 ## 🌟 Key Features
 
-- **Spotify-like "Now Playing" UI**: Any active song running in your playlist visually displays in a dedicated, colorful `▶ NOW PLAYING:` header right on the main menu.
-- **Looped Playback**: Backed by a structural Circular Doubly Linked List, the playlist organically loops back to the start when you hit 'next' on your final track. Interactive, infinite radio!
-- **Interactive Library Expansion**: Effortlessly add to your playlist by typing a song's automatically-generated serial number—no more spelling out full case-sensitive titles!
-- **Persistent Storage**: Whether you are modifying `.txt` lists directly or manually adding songs through the CLI app, your entire custom library (songs and albums) is reliably serialized back to `songs.txt` and `albums.dat` on exit.
-- **Robust Edge Cases**: Fully polished safety checks. Deleting from empty playlists or viewing missing libraries handles gracefully via custom colored alerts rather than crashing.
+- 🎧 **Spotify-like "Now Playing" UI**: Any active song running in your playlist visually displays in a dedicated, colorful `▶ NOW PLAYING:` header right on the main menu.
+- 🔁 **Looped Playback**: Enjoy infinite radio! Backed by a structural **Circular Doubly Linked List**, the playlist organically loops back to the start when you hit 'next' on your final track. 
+- ⚡ **Interactive Library Expansion**: Effortlessly add to your playlist by typing a song's automatically-generated serial number—no more spelling out full case-sensitive titles!
+- 💾 **Persistent Storage**: Whether you are modifying `.txt` lists directly or manually adding songs through the CLI app, your entire custom library (songs and albums) is reliably serialized back to `songs.txt` and `albums.dat` on exit.
+- 📜 **Session Logging**: All command choices are safely logged on disk so you can review interaction history any time.
+- 🛡️ **Robust Edge Cases**: Fully polished safety checks. Deleting from empty playlists or viewing missing libraries handles gracefully via custom colored alerts rather than crashing.
+
+---
+
+## 🏗️ Architecture & Code Details
+
+Under the hood, C-Unplugged is built using clean and efficient data structures to simulate a true desktop music player:
+- **Circular Doubly Linked List:** Powers the customizable `PlayList` engine, ensuring fast inserts, O(1) removals for the current node, and seamless looping between the head and tail of the queue.
+- **Singly Linked Lists:** Act as scalable dynamic memory pools for tracking the global `Album` and `Song` libraries.
+- **File System Serialization:** Complex data structures are intelligently traversed and baked down into raw persistent disk files `.txt` and `.dat` formats via `save_album_to_file()` and `save_songs_to_file()`.
+- **Modular Design:** Subdivided comprehensively into discrete C headers (`logger.h`, `song.h`, `album.h`, `playlist.h`, `song_controls.h`) optimizing code maintainability and testability.
+
+---
 
 ## 🚀 Getting Started
 
@@ -37,6 +52,8 @@ make run
 ./c_unplugged
 ```
 
+---
+
 ## 🎮 How to use
 
 Upon starting the program, you will be presented with the main menu. 
@@ -58,3 +75,13 @@ Enter the number corresponding to your desired action and press `Enter`.
 0.  **Exit:** Safely dumps your modified library state back to disk memory and exits the CLI.
 
 > **Note:** For exact title/text inputs, be sure to spell the title accurately as trailing whitespaces and casing matters!
+
+---
+
+## 📜 License & Copyright
+
+**© 2026. All rights reserved.**
+
+This software and its underlying source code is my proprietary, confidential work.
+**It may not be reproduced, distributed, or modified in any form or by any means without my explicit prior written permission.** 
+All rights not expressly granted are reserved.
