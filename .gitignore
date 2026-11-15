@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Compiled Object Files & Binaries
+*.o
+*.out
+*.dSYM/
+c_unplugged
+
+# Editor / IDE
+.vscode/
+.idea/

@@ -1,27 +1,76 @@
-# 🎵 C-Unplugged Music Application 🎵
+<div align="center">
 
-**C-Unplugged** is a vibrant, fully-featured, CLI-based music library and playlist manager written entirely in C. Step away from the heavy GUI apps and return to the golden age of terminal utilities, with modern features, colorful outputs, and highly interactive menus.
+# 🎵 C-Unplugged — CLI Music Library & Playlist Engine
 
----
+**A zero-dependency, terminal-based music library and playlist management engine engineered in C.**
 
-## 🌟 Key Features
+![Language](https://img.shields.io/badge/Language-C99%2FC11-00599C?style=for-the-badge&logo=c&logoColor=white)
+![Build](https://img.shields.io/badge/Build-GNU_Make-427819?style=for-the-badge&logo=gnu&logoColor=white)
+![Data Structures](https://img.shields.io/badge/Data_Structures-Circular_DLL_%26_SLL-ff69b4?style=for-the-badge)
+![Platform](https://img.shields.io/badge/Platform-POSIX_%7C_macOS_%7C_Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
-- 🎧 **Spotify-like "Now Playing" UI**: Any active song running in your playlist visually displays in a dedicated, colorful `▶ NOW PLAYING:` header right on the main menu.
-- 🔁 **Looped Playback**: Enjoy infinite radio! Backed by a structural **Circular Doubly Linked List**, the playlist organically loops back to the start when you hit 'next' on your final track. 
-- ⚡ **Interactive Library Expansion**: Effortlessly add to your playlist by typing a song's automatically-generated serial number—no more spelling out full case-sensitive titles!
-- 💾 **Persistent Storage**: Whether you are modifying `.txt` lists directly or manually adding songs through the CLI app, your entire custom library (songs and albums) is reliably serialized back to `songs.txt` and `albums.dat` on exit.
-- 📜 **Session Logging**: All command choices are safely logged on disk so you can review interaction history any time.
-- 🛡️ **Robust Edge Cases**: Fully polished safety checks. Deleting from empty playlists or viewing missing libraries handles gracefully via custom colored alerts rather than crashing.
+</div>
 
 ---
 
-## 🏗️ Architecture & Code Details
+## 📌 Executive Summary
 
-Under the hood, C-Unplugged is built using clean and efficient data structures to simulate a true desktop music player:
-- **Circular Doubly Linked List:** Powers the customizable `PlayList` engine, ensuring fast inserts, O(1) removals for the current node, and seamless looping between the head and tail of the queue.
-- **Singly Linked Lists:** Act as scalable dynamic memory pools for tracking the global `Album` and `Song` libraries.
-- **File System Serialization:** Complex data structures are intelligently traversed and baked down into raw persistent disk files `.txt` and `.dat` formats via `save_album_to_file()` and `save_songs_to_file()`.
-- **Modular Design:** Subdivided comprehensively into discrete C headers (`logger.h`, `song.h`, `album.h`, `playlist.h`, `song_controls.h`) optimizing code maintainability and testability.
+**C-Unplugged** is a modular command-line music library, album organizer, and interactive playlist engine written from scratch in **C**. Designed to demonstrate low-level systems programming, manual heap lifecycle management, custom file serialization, and pointer-intensive data structures, it replicates core desktop music player workflows—including continuous looped playback, album-to-queue batch ingestion, and persistent session auditing—inside an ANSI-styled terminal interface.
+
+---
+
+## 🌟 Key Engineering Features
+
+- 🎧 **Real-Time "Now Playing" HUD**: Active playback state is continuously tracked and rendered in an ANSI-colored `▶ NOW PLAYING` status banner at the top of the interactive event loop.
+- 🔁 **Unbounded Looped Playback (Circular Doubly Linked List)**: The active playback queue is backed by a **Circular Doubly Linked List**, enabling $O(1)$ bidirectional track traversal (`Play Next` / `Play Previous`) with seamless wrap-around between tail and head nodes.
+- ⚡ **Indexed O(N) Catalog Lookup & Batch Enqueueing**: Supports direct track selection via auto-indexed serial IDs as well as bulk album-to-playlist injection without string-matching overhead.
+- 💾 **Custom Text & Binary-Style Persistence**: Automatically deserializes the master song repository (`songs.txt`) and hierarchical album structures (`albums.dat`) on startup and commits in-memory mutations back to disk upon exit.
+- 📜 **Auditable Command Telemetry**: Logs timestamped user operations to `command_log.txt` via a dedicated logging subsystem (`logger.c`) for session replay and debugging.
+- 🛡️ **Defensive Memory & Input Hygiene**: Gracefully handles empty-queue edge cases, dangling pointer prevention during active-track deletion, and safe `fgets`/`sscanf` input parsing.
+
+---
+
+## 🏗️ System Architecture & Data Structures
+
+```text
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         C-Unplugged CLI Engine                          │
+├───────────────────────┬─────────────────────────┬───────────────────────┤
+│   Global Song Pool    │   Album Registry        │  Active PlayList      │
+│  (Singly Linked List) │  (Nested Singly Lists)  │ (Circular Doubly LL)  │
+│                       │                         │                       │
+│  [Song 1] -> [Song 2] │  [Album A] -> [Album B] │  ⇄ [Node 1] ⇄ [Node 2]│
+│      ↕                │      │                  │    ▲              ▲   │
+│   songs.txt           │      └──> [Track List]  │    └──────────────┘   │
+│                       │              ↕          │   O(1) Next/Prev/Del  │
+│                       │          albums.dat     │                       │
+└───────────────────────┴─────────────────────────┴───────────────────────┘
+```
+
+### Complexity & Design Breakdown
+
+| Subsystem | Underlying Structure | Time Complexity | Architectural Rationale |
+| :--- | :--- | :--- | :--- |
+| **Playback Queue (`playlist.c`)** | Circular Doubly Linked List | **$O(1)$** step next/prev, **$O(1)$** active-node removal | Eliminates null-boundary checks during continuous radio looping and allows immediate splicing when removing the currently playing track. |
+| **Global Song Library (`song.c`)** | Singly Linked List | **$O(1)$** tail append, **$O(N)$** indexed lookup | Dynamic heap allocation scales to arbitrary catalog sizes without fixed-size array reallocations. |
+| **Album Catalog (`album.c`)** | 2-Level Hierarchical SLL | **$O(A \cdot S)$** serialization | Each `Album` node maintains its own internal `Song` linked list, decoupling album curation from the active playback queue. |
+| **Audit Logger (`logger.c`)** | Append-Only File Stream | **$O(1)$** amortized write | Flushes timestamped menu commands (`ctime`) to `command_log.txt` for persistent session history. |
+
+### Repository Layout
+
+```text
+C-Unplugged/
+├── common_structures.h   # Core structs (Song, Album, PlayList) & ANSI color macros
+├── main.c                # Interactive CLI state loop & menu dispatcher
+├── song.h / song.c       # Master song library CRUD & songs.txt serialization
+├── album.h / album.c     # Album catalog management & albums.dat persistence
+├── playlist.h / .c       # Circular Doubly Linked List queue & cursor mechanics
+├── song_controls.h / .c  # Playback state transitions & track navigation
+├── logger.h / logger.c   # Timestamped command history logger (command_log.txt)
+├── songs.txt             # Persistent master track database
+├── albums.dat            # Persistent album-to-track mapping store
+└── Makefile              # GNU Make build automation
+```
 
 ---
 
@@ -29,59 +78,49 @@ Under the hood, C-Unplugged is built using clean and efficient data structures t
 
 ### Prerequisites
 
-- A C Compiler (e.g., `gcc` or `clang`).
-- GNU `Make`.
+- **C Compiler**: `gcc` or `clang` (supporting C99/C11)
+- **Build System**: GNU `make`
 
-### Building the Project
-
-Navigate to the project root directory and build the application cleanly using Make:
+### Compilation & Execution
 
 ```bash
-# Clean previously built objects and compile the project
-make clean
-make
-```
+# 1. Clone the repository
+git clone https://github.com/voidp1xel/C-unplugged.git
+cd C-Unplugged
 
-### Running the Program
+# 2. Clean any previous build artifacts and compile
+make clean && make
 
-To run the compiled program, simply execute the generated binary directly, or use the `Make` shorthand:
-
-```bash
+# 3. Launch the interactive CLI
 make run
-# OR
+# or directly:
 ./c_unplugged
 ```
 
 ---
 
-## 🎮 How to use
+## 🎮 Interactive CLI Operations
 
-Upon starting the program, you will be presented with the main menu. 
-Enter the number corresponding to your desired action and press `Enter`. 
-
-**Options:**
-1.  **List all songs:** Displays every song loaded into your library.
-2.  **List all albums:** Displays the names and release years of your created albums.
-3.  **Create album:** Prompts you for an album title and release year. Adds an empty album entry to your library.
-4.  **View album songs:** Prompts for the name of an existing album and lists the specific songs contained within.
-5.  **Add song to album:** Bulk adds tracks from your global library directly into an album's catalog.
-6.  **Delete song from album:** Search and remove a singular track from a given album without deleting the album itself.
-7.  **Add album to playlist:** Bulk inserts all tracks belonging to a given album to your 'Now Playing' queue.
-8.  **Add song to playlist:** Generates a sub-menu! You can instantly enqueue a song by its serial number or generate a brand-new track on the fly.
-9.  **Play next:** Moves the playlist cursor forward and loops if at the end of the queue.
-10. **Play previous:** Reverses the playback cursor natively.
-11. **Remove current song from playlist:** Deletes your currently highlighted track from the playlist natively.
-12. **View command history:** Displays prior session menu interactions from a local logger.
-0.  **Exit:** Safely dumps your modified library state back to disk memory and exits the CLI.
-
-> **Note:** For exact title/text inputs, be sure to spell the title accurately as trailing whitespaces and casing matters!
+| Option | Command | Description |
+| :---: | :--- | :--- |
+| `1` | **List All Songs** | Displays all tracks registered in the global song pool with durations. |
+| `2` | **List All Albums** | Prints all curated albums and their release years. |
+| `3` | **Create Album** | Allocates a new album entry and persists it to the catalog. |
+| `4` | **View Album Songs** | Inspects the tracklist of a specific album. |
+| `5` | **Add Song to Album** | Links tracks from the global pool into a target album. |
+| `6` | **Delete Song from Album** | Unlinks and frees a specific track node from an album. |
+| `7` | **Add Album to Playlist** | Batch-enqueues an entire album into the Circular Doubly Linked List queue. |
+| `8` | **Add Song to Playlist** | Enqueues an existing library song by index or registers a new track on the fly. |
+| `9` | **Play Next** | Advances the playback pointer (`current->next`) with circular wrap-around. |
+| `10` | **Play Previous** | Reverses the playback pointer (`current->prev`) in $O(1)$ time. |
+| `11` | **Remove Current Song** | Unlinks and `free()`s the active node from the circular queue safely. |
+| `12` | **View Command History** | Streams the session audit log from `command_log.txt`. |
+| `0` | **Save & Exit** | Serializes all in-memory mutations to `songs.txt` and `albums.dat` and exits cleanly. |
 
 ---
 
 ## 📜 License & Copyright
 
-**© 2026. All rights reserved.**
+**© 2026 Aniket Goel. All Rights Reserved.**
 
-This software and its underlying source code is my proprietary, confidential work.
-**It may not be reproduced, distributed, or modified in any form or by any means without my explicit prior written permission.** 
-All rights not expressly granted are reserved.
+This software and its underlying source code are proprietary and confidential. It may not be reproduced, distributed, or modified in any form or by any means without explicit prior written permission from the author.
