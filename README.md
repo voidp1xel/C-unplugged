@@ -59,7 +59,7 @@
 ### Repository Layout
 
 ```text
-C-Unplugged/
+C-unplugged/
 ├── common_structures.h   # Core structs (Song, Album, PlayList) & ANSI color macros
 ├── main.c                # Interactive CLI state loop & menu dispatcher
 ├── song.h / song.c       # Master song library CRUD & songs.txt serialization
@@ -86,7 +86,7 @@ C-Unplugged/
 ```bash
 # 1. Clone the repository
 git clone https://github.com/voidp1xel/C-unplugged.git
-cd C-Unplugged
+cd C-unplugged
 
 # 2. Clean any previous build artifacts and compile
 make clean && make
